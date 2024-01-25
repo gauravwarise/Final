@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block css %}
+<style>
+    /* Add your custom styles here */
+</style>
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-grid.css" />
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-theme-alpine.css" />
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<div class="container mt-4">
+
+<form action="/stocktracker">
+  <label for="stockpicker"> Select Stocks:</label>
+  <select class="form-select form-select-lg mb-3" multiple aria-label="Multiple select example" name="stockpicker">
+    {% for i in stockpicker %}
+      <option value="{{i}}">{{i}}</option>
+    {% endfor %}
+  </select>
+  <div class="d-grid gap-2">
+    <input class="btn btn-primary" type="Submit" value="Submit">
+  </div>
+</form>
+</div>
+<div class="maincontainer">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card m-5">
+                <div class="card-header">
+                    Featured
+                </div>
+                <div class="card-body">
+                  <div class="container">
+                    <div id="agGrid" style="height: 300px;" class="ag-theme-alpine">
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card m-5">
+                <div class="card-header">
+                    Featured
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">First</th>
+                            <th scope="col">Last</th>
+                            <th scope="col">Handle</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row">1</th>
+                            <td>Mark</td>
+                            <td>Otto</td>
+                            <td>@mdo</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">2</th>
+                            <td>Jacob</td>
+                            <td>Thornton</td>
+                            <td>@fat</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">3</th>
+                            <td colspan="2">Larry the Bird</td>
+                            <td>@twitter</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var rowData = [];
+
+        // Populate rowData with your data
+        {% for key, value in data.items %}
+            var change =  parseFloat('{{ value.Previous_Close }}') - parseFloat('{{ value.Quote_Price }}');
+            rowData.push({
+                'SNo': '{{ key }}',
+                'MarketCap': '{{ value.Market_Cap }}',
+                'QuotePrice': '{{ value.Quote_Price }}',
+                'PreviousClose': '{{ value.Previous_Close }}',
+                'Volume': '{{ value.Volume }}',
+                'Change': change
+            });
+        {% endfor %}
+
+        // specify the columns
+        var columnDefs = [
+            { headerName: 'SNo', field: 'SNo' },
+            { headerName: 'MarketCap', field: 'MarketCap' },
+            { headerName: 'Previous Close', field: 'PreviousClose' },
+            { headerName: 'Quote Price', field: 'QuotePrice' },
+            { headerName: 'Change', field: 'Change',
+              cellStyle: function(params) {
+                return params.value < 0 ? {color: 'red'} : {color: 'green'};
+              }
+            },
+            { headerName: 'Volume', field: 'Volume' },
+            
+
+        ];
+
+        // let the grid know which columns to use
+        var gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData
+        };
+
+        // lookup the container we want the Grid to use
+        var eGridDiv = document.querySelector('#agGrid');
+
+        // create the grid passing in the div to use together with the columns & data we want to use
+        agGrid.createGrid(eGridDiv, gridOptions);
+    });
+</script>
+
+{% endblock %}

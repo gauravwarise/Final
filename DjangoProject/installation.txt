@@ -1,0 +1,20 @@
+============= celery configuration ==================
+to install celery =>
+                    pip install celery
+configure settings.py for celery =>                          
+                                #Celery Settings
+                                CELERY_BROKER_URL = 'redis://127.0.0.1:6379' #default post for celery 
+                                CELERY_ACCEPT_CONTENT = ['application/json'] 
+                                CELERY_RESULT_SERIALIZER = 'json'
+                                CELERY_TASK_SERIALIZER = 'json'
+                                CELERY_TIMEZONE = 'Asia/Kolkata'               
+install Redis (to maintain a celery task) =>
+                                install redist version greater than 5.0.10
+                                mention in install apps (django_celery_results) for alocate the task to celery
+
+celery Beat => it tells celery to perform a task in perticular time (task schedular)
+                (celery beat will add the task to Redis Queue at the specified time.)
+                pip install django-celery-beat
+                mention in install apps (django_celery_beat)
+                and in setting =>
+                             CELERY_RESULT_BACKEND = django-db (this means where do you want to store your tasks information)   

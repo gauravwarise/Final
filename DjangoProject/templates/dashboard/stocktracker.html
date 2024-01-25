@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block css %}
+<style>
+    /* Add your custom styles here */
+</style>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<div class="container">
+    <h1>Live stock tracker</h1>
+    <table class="table-container">
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">SNo.</th>
+            <th scope="col">MarketCap</th>
+            <th scope="col">Previous_Close</th>
+            <th scope="col">Close</th>
+            <th scope="col">Quote_Price</th>
+            <th scope="col">Volume</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, value in data.items %}
+          <tr>
+            <!-- <th scope="row">{{ forloop.counter }}</th> -->
+            <th scope="row">{{ key }}</th>
+
+            <td>{{ value.Market_Cap }}</td>
+            <td>{{ value.Open }}</td>
+            <td>{{ value.Previous_Close }}</td>
+            <td>{{ value.Quote_Price }}</td>
+            <td>{{ value.Volume }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </table>
+    
+
+  </div>
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block css %}
+<style>
+    /* Add your custom styles here */
+</style>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="vh-100">
+    <div class="container py-5 h-100">
+        <div class="row d-flex align-items-center justify-content-center h-100">
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.svg"
+                    class="img-fluid" alt="Phone image">
+            </div>
+            <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+                <form id="authForm">
+                    {% csrf_token %}
+                
+                    <div class="form-outline mb-4">
+                        {% include 'partials/_messages.html' %}
+                    </div>
+
+                    <!-- Username input -->
+                    <div class="form-outline mb-4" data-mdb-input-init>
+                        <input required type="text" id="usernamefield" class="form-control form-control-lg" autocomplete="username" />
+                        <label class="form-label" for="usernamefield">Username</label>
+                    </div>
+                
+                    <!-- Email input -->
+                    <div class="form-outline mb-4" data-mdb-input-init>
+                        <input required type="email" id="emailfield" class="form-control form-control-lg" autocomplete="email" />
+                        <label class="form-label" for="emailfield">Email address</label>
+                    </div>
+                
+                    <!-- Password input -->
+                    <div class="form-outline mb-4" data-mdb-input-init>
+                        <input required type="password" id="passwordfield" class="form-control form-control-lg" autocomplete="current-password" />
+                        <label class="form-label" for="passwordfield">Password</label>
+                    </div>
+                
+                    <!-- Confirm Password input -->
+                    <div class="form-outline mb-4" data-mdb-input-init>
+                        <input required type="password" id="confirmpasswordfield" class="form-control form-control-lg" autocomplete="current-password" />
+                        <label class="form-label" for="confirmpasswordfield">Confirm Password</label>
+                    </div>
+                
+                    <!-- Submit button -->
+                   
+                    <button data-mdb-ripple-init type="button"  class="btn btn-primary btn-lg btn-block" id="submitButton">Sign Up</button>
+                    <button type="button" class="btn btn-primary btn-lg btn-block" id="toggleSignIn">Sign In</button>
+                    
+                    <!-- Move the event listener registration inside the 'toggleSignUp' click event -->
+                    <button type="button" class="btn btn-link" id="toggleForm">Forgot password?</button>
+                
+                
+                    <div class="divider d-flex align-items-center my-4">
+                        <p class="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
+                    </div>
+                
+                    <a class="btn btn-primary btn-lg btn-block" style="background-color: #3b5998" href="#!" role="button">
+                        <i class="fab fa-facebook-f me-2"></i>Continue with Facebook
+                    </a>
+                    <a class="btn btn-primary btn-lg btn-block" style="background-color: #55acee" href="#!" role="button">
+                        <i class="fab fa-twitter me-2"></i>Continue with Twitter</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}
