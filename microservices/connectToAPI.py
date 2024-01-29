@@ -54,9 +54,9 @@ class ConnectToAPI :
             headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             __response = requests.post(url=self.__loginURL,data=__body, headers=headers)
             if __response.status_code == 200 : 
-                print("============== login successfully ================") 
+                print("============== login successfully ================", "sessionid: ",__response.cookies.get("sessionid"), "csrftoken: ", __response.cookies.get("csrftoken")) 
                 try:
-                    __session = Session(csrf=__response.cookies.get("csrftoken"))
+                    __session = Session(sessionid=__response.cookies.get("sessionid"),csrf=__response.cookies.get("csrftoken"))
                     with open(self._pickleFile,"wb") as f :
                         pickle.dump(__session,f)   
                     response_data = loads(__response.text)
@@ -98,9 +98,16 @@ class Session :
     """
 
     def __init__(self,**kwargs) :
+        self.__sessionid = kwargs.get("sessionid",None)
         self.__csrf = kwargs.get("csrf",None)
 
+    @property
+    def sessionid(self):
+        return self.__sessionid     
 
+    @sessionid.setter
+    def sessionid(self,value):
+        self.__sessionid = value
 
     @property
     def csrf(self):

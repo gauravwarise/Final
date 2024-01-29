@@ -201,13 +201,21 @@ class LoginView(View):
                 print(__username, __password)
                 response = {"status": "success", "errorcode": "","reason": "", "result": "", "httpstatus": 200}
                 user = authenticate(request=request, username=__username, password=__password)
-                print("user ===================<<<<<<<<<<<<<<", user)
+                print("user ===================<<<<<<<<<<<<<<", user.id)
                 login(request, user)
+                request.session['username'] = __username
+                request.session['user_id'] = user.id
+                request.session['role'] = role
+
 
 
 
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
+
+            sessionid = request.session.session_key
+            response['sessionid'] = sessionid
+            print("???????????????", sessionid)
 
             response['access_token'] = access_token
             response['status'] = "success"
@@ -215,6 +223,7 @@ class LoginView(View):
             resp = JsonResponse(response, status=response.get(
                 'httpstatus', 200))
             resp.set_cookie('access_token', access_token)
+            resp.set_cookie('sessionid', sessionid)
             return resp 
         # username = request.POST['username']
         # password = request.POST['password']
@@ -292,11 +301,11 @@ class LoginView(View):
 
             if user is not None:
                 print("============================")
+                print("========", user.id)
                 if user.is_active:
                     login(request, user)
                     request.session['username'] = __username
 
-                    
                     messages.success(request, 'Welcome, ' +
                                      user.username+' you are now logged in')
                     

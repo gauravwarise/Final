@@ -7,7 +7,6 @@ import websockets
 from utils import *
 
 
-
 baseURL="http://127.0.0.1:1234"
 wsURL="ws://127.0.0.1:1234"
 
@@ -36,21 +35,6 @@ class StockDetail(ConnectToAPI):
             asyncio.run(self.connect_to_websocket())
         else:
             print("Login failed. WebSocket connection not established.")
-
-    # async def send_to_websocket_group(self, message):
-    #     try:
-    #         sessionid = self._sessionData.sessionid
-    #         csrf = self._sessionData.csrf
-    #     except Exception as e:
-    #         print(e)
-
-    #     headers = {"Cookie": f"csrftoken={self._sessionData.csrf}; sessionid={self._sessionData.sessionid}"}
-
-    #     async with websockets.connect(self._wsURL, extra_headers=headers) as websocket:
-    #         data_to_send = json.dumps({"message": message})
-    #         await websocket.send(data_to_send)
-    #         print(f"Sent to WebSocket Group: {data_to_send}")
-        
      
     async def connect_to_websocket(self):
         try:
@@ -66,8 +50,6 @@ class StockDetail(ConnectToAPI):
                 # print(data)
                 message_to_send = json.dumps({"message":f"Hello, WebSocket!"})
                 await websocket.send(message_to_send)
-                # message_to_send = "Hello, WebSocket!"
-                # await self.send_to_websocket_group(message_to_send)
                 print(f"Sent: {message_to_send}")
                 try:
                     message_received = await websocket.recv()
@@ -75,8 +57,6 @@ class StockDetail(ConnectToAPI):
                 except asyncio.TimeoutError:
                     print("No message received in the last 5 seconds.")
                 await asyncio.sleep(1)
-    
-    
 
 if __name__ =="__main__":
     StockDetail()
