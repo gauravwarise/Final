@@ -28,11 +28,18 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
 
+from yahoo_fin.stock_info import *
 
+
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 
 
 
@@ -276,7 +283,7 @@ class LoginView(View):
 
         if __username and __password:
             user = authenticate(request=request, username=__username, password=__password)
-            print("user ========================>", user)
+            # print("user ========================>", user)
             # print(user.id)
             active_sessions = Session.objects.filter(
                     expire_date__gte=timezone.now(),
@@ -287,29 +294,47 @@ class LoginView(View):
             #        print("user is already logged in")
             for session in active_sessions:
                 session_data = session.get_decoded()
-                print(session_data, session_data.get('_auth_user_id'))
+                # print(session_data, session_data.get('_auth_user_id'))
                 auth_user_id = session_data.get('_auth_user_id')
                 if auth_user_id is not None and user.id == int(auth_user_id):
-                    print("\\\\\\\\\\\\\\\\\\\\\\\\user is exist")
+                    # print("\\\\\\\\\\\\\\\\\\\\\\\\user is exist")
                     user_exists = True
                     return render(request, 'account/login.html', {'user_exists': user_exists, 'username':__username, 'password':__password})
                 else:
                     pass
 
-            print(is_user_logged_in(user), active_sessions)
+            # print(is_user_logged_in(user), active_sessions)
             
 
             if user is not None:
-                print("============================")
-                print("========", user.id)
+                # print("============================")
+                # print("========", user.id)
                 if user.is_active:
                     login(request, user)
                     request.session['username'] = __username
+                    user = request.user
+                    role = user.role
+                    request.session['role'] = role
+
+                    channel_layer = get_channel_layer()
+                    room_group_name = "testw_consumer_group"
+                    async_to_sync(channel_layer.group_add)(room_group_name, f"user_{user.id}")
+                    print('chanel layer: ====',channel_layer)
+                    is_user_in_group = self.is_user_in_channel_group(room_group_name, f"user_{user.id}")
+                    if is_user_in_group:
+                        print(f"User {user.username} successfully added to group {room_group_name}")
+                    else:
+                        print(f"Failed to add user {user.username} to group {room_group_name}")
+
 
                     messages.success(request, 'Welcome, ' +
                                      user.username+' you are now logged in')
                     
-                    return redirect('dashboard')
+                    available_stocks = tickers_nifty50()
+                    print(available_stocks)
+                    
+                    # return render(request, 'dashboard/dashboard.html', {'stockpicker': available_stocks, 'user': user, 'role': role})
+                    return render(request,'dashboard/dashboard.html', {'stockpicker': available_stocks,'user': user, 'role': role})
                 messages.error(
                     request, 'Account is not active,please check your email')
                 return render(request, 'account/login.html')
@@ -321,6 +346,11 @@ class LoginView(View):
             request, 'Please fill all fields')
         return render(request, 'account/login.html')
 
+    @database_sync_to_async
+    def is_user_in_channel_group(room_group_name, channel_name):
+        channel_layer = get_channel_layer()
+        group_channels = async_to_sync(channel_layer.group_channels)(room_group_name)
+        return channel_name in group_channels
     # def post(self, request):
     #     username = request.POST["username"]
     #     password = request.POST["password"]

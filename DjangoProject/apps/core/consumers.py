@@ -90,10 +90,10 @@ class StockConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_message(self, event):
         # Send the message to the WebSocket
-        print("inside brodcaster")
+        
         message = event['message']
         await self.send(text_data=json.dumps({
-            'message': f"You said: {message}"
+            'message': message
         }))
 
 

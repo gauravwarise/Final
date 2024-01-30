@@ -11,6 +11,12 @@ from django.utils.decorators import method_decorator
 from .utils import get_quote_table
 
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
+
+
+
 # @login_required
 @method_decorator(login_required, 'dispatch')
 class DashboardView(APIView):
@@ -18,6 +24,21 @@ class DashboardView(APIView):
         stock_tickers = tickers_nifty50()
         username = request.session.get('username') 
         print("======>",username)
+
+        # user = request.user
+        # role = user.role
+        # request.session['role'] = role
+
+        # channel_layer = get_channel_layer()
+        # room_group_name = "testw_consumer_group"
+        # async_to_sync(channel_layer.group_add)(room_group_name, f"user_{user.id}")
+        # print('chanel layer: ====',channel_layer)
+        # is_user_in_group = self.is_user_in_channel_group(room_group_name, f"user_{user.id}")
+        # if is_user_in_group:
+        #     print(f"User {user.username} successfully added to group {room_group_name}")
+        # else:
+        #     print(f"Failed to add user {user.username} to group {room_group_name}")
+
         
         return render(request, 'dashboard/dashboard.html', {'stockpicker': stock_tickers, 'username':username})
 

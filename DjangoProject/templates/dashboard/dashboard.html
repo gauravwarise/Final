@@ -31,19 +31,17 @@
     <div class="row">
         <div class="col-md-6">
             <div class="card m-5">
-                <div class="card-header">
-                    Featured
+                <div class="card-header bg-primary" style="color:white;">
+                    Stock Details
                 </div>
-                <div class="card-body">
-                  <div class="container">
+                <div class="mt-0">
                     <div id="agGrid" style="height: 300px;" class="ag-theme-alpine">
                     </div>
-                </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card m-5">
+            <div>
                 <div class="card-header">
                     Featured
                 </div>
@@ -84,51 +82,66 @@
 </div>
 <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
 <script>
+    var socket = new WebSocket('ws://' + window.location.host + '/ws/stock/')
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var rowData = [];
 
-        // Populate rowData with your data
-        {% for key, value in data.items %}
-            var change =  parseFloat('{{ value.Previous_Close }}') - parseFloat('{{ value.Quote_Price }}');
-            rowData.push({
-                'SNo': '{{ key }}',
-                'MarketCap': '{{ value.Market_Cap }}',
-                'QuotePrice': '{{ value.Quote_Price }}',
-                'PreviousClose': '{{ value.Previous_Close }}',
-                'Volume': '{{ value.Volume }}',
-                'Change': change
-            });
-        {% endfor %}
-
-        // specify the columns
-        var columnDefs = [
-            { headerName: 'SNo', field: 'SNo' },
+    var gridOptions = {
+        columnDefs: [
+            { headerName: 'Symbol', field: 'symbol' },
             { headerName: 'MarketCap', field: 'MarketCap' },
-            { headerName: 'Previous Close', field: 'PreviousClose' },
-            { headerName: 'Quote Price', field: 'QuotePrice' },
             { headerName: 'Change', field: 'Change',
               cellStyle: function(params) {
                 return params.value < 0 ? {color: 'red'} : {color: 'green'};
               }
             },
-            { headerName: 'Volume', field: 'Volume' },
-            
+            { headerName: 'Previous Close', field: 'PreviousClose' },
+            { headerName: 'Quote Price', field: 'QuotePrice' },
+            { headerName: 'Volume', field: 'Volume' }
+          ],
+        rowData: []
+    };
 
-        ];
-
-        // let the grid know which columns to use
-        var gridOptions = {
-            columnDefs: columnDefs,
-            rowData: rowData
-        };
-
-        // lookup the container we want the Grid to use
-        var eGridDiv = document.querySelector('#agGrid');
-
-        // create the grid passing in the div to use together with the columns & data we want to use
-        agGrid.createGrid(eGridDiv, gridOptions);
+    var eGridDiv = document.querySelector('#agGrid');
+    new agGrid.Grid(eGridDiv, gridOptions);
+    //new agGrid.createGrid(eGridDiv, gridOptions);
+    
+    socket.addEventListener('open', function (event) {
+        console.log('WebSocket connection opened');
     });
+
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+        var data = JSON.parse(event.data);
+        var message = data['message'];
+        // Handle the received message, e.g., update UI
+        console.log('Received message: ', message);
+
+        var rowData = Object.keys(message).map(function(symbol) {
+          var previousClose = message[symbol]['Previous_Close'];
+          var quotePrice = message[symbol]['Quote_Price'];
+          var change = quotePrice - previousClose;
+          return {
+              symbol: symbol,
+              MarketCap: message[symbol]['Market_Cap'],
+              Change: change,
+              PreviousClose: previousClose,
+              QuotePrice: quotePrice,
+              Volume: message[symbol]['Volume'],
+              // Add more properties based on your data structure
+              // Example: 52_Week_Range: message[symbol]['52_Week_Range'],
+          };
+      });
+
+        gridOptions.api.setRowData(rowData);
+        //gridOptions.api.applyTransaction({add:rowData});
+
+    });
+
+    // Connection closed
+    socket.addEventListener('close', function (event) {
+        console.log('WebSocket connection closed');
+    });
+   
 </script>
 
 {% endblock %}
