@@ -46,6 +46,7 @@ class StockConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = "test_consumer"
         self.room_group_name = "testw_consumer_group"
+        self.stockpicket_group_name = "stockpicker_group"
 
         user = self.scope["user"]
 
@@ -57,12 +58,22 @@ class StockConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        await self.channel_layer.group_add(
+            self.stockpicket_group_name,
+            self.channel_name
+        )
+
         await self.accept()
 
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
+            self.channel_name
+        )
+
+        await self.channel_layer.group_discard(
+            self.stockpicket_group_name,
             self.channel_name
         )
 
@@ -88,13 +99,22 @@ class StockConsumer(AsyncWebsocketConsumer):
             }
         )
 
+        await self.channel_layer.group_send(
+            self.stockpicket_group_name,
+            {
+                'type': 'broadcast.message',
+                'message': message
+            }
+        )
+
     async def broadcast_message(self, event):
         # Send the message to the WebSocket
-        
         message = event['message']
         await self.send(text_data=json.dumps({
             'message': message
         }))
+    
+
 
 
     # def connect(self):

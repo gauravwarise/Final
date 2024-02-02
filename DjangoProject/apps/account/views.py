@@ -215,6 +215,16 @@ class LoginView(View):
                 request.session['role'] = role
 
 
+                channel_layer = get_channel_layer()
+                stockpicket_group_name = "stockpicker_group"
+                async_to_sync(channel_layer.group_add)(stockpicket_group_name,f"user_{user.id}")
+                print('chanel layer: ====',channel_layer)
+                is_user_in_group = self.is_user_in_channel_group(stockpicket_group_name, f"user_{user.id}")
+                if is_user_in_group:
+                    print(f"microservice {__username} successfully added to group {stockpicket_group_name}")
+                else:
+                    print(f"Failed to add user {__username} to group {stockpicket_group_name}")
+
 
 
             refresh = RefreshToken.for_user(user)
@@ -283,7 +293,7 @@ class LoginView(View):
 
         if __username and __password:
             user = authenticate(request=request, username=__username, password=__password)
-            # print("user ========================>", user)
+            # print(user)
             # print(user.id)
             active_sessions = Session.objects.filter(
                     expire_date__gte=timezone.now(),
@@ -312,29 +322,35 @@ class LoginView(View):
                 if user.is_active:
                     login(request, user)
                     request.session['username'] = __username
-                    user = request.user
-                    role = user.role
-                    request.session['role'] = role
+                    print("user ========================>", user.id, user.role)
+                    request.session['id'] = user.id
+                    request.session['role'] = user.role
+                    # user = request.user
+                    # role = user.role
+                    # request.session['role'] = role
 
-                    channel_layer = get_channel_layer()
-                    room_group_name = "testw_consumer_group"
-                    async_to_sync(channel_layer.group_add)(room_group_name, f"user_{user.id}")
-                    print('chanel layer: ====',channel_layer)
-                    is_user_in_group = self.is_user_in_channel_group(room_group_name, f"user_{user.id}")
-                    if is_user_in_group:
-                        print(f"User {user.username} successfully added to group {room_group_name}")
-                    else:
-                        print(f"Failed to add user {user.username} to group {room_group_name}")
+                    # channel_layer = get_channel_layer()
+                    # room_group_name = "testw_consumer_group"
+                    # async_to_sync(channel_layer.group_add)(room_group_name, f"user_{user.id}")
+                    # print('chanel layer: ====',channel_layer)
+                    # is_user_in_group = self.is_user_in_channel_group(room_group_name, f"user_{user.id}")
+                    # if is_user_in_group:
+                    #     print(f"User {user.username} successfully added to group {room_group_name}")
+                    # else:
+                    #     print(f"Failed to add user {user.username} to group {room_group_name}")
 
 
-                    messages.success(request, 'Welcome, ' +
-                                     user.username+' you are now logged in')
+                    # messages.success(request, 'Welcome, ' +
+                    #                  user.username+' you are now logged in')
                     
-                    available_stocks = tickers_nifty50()
-                    print(available_stocks)
+                    # available_stocks = tickers_nifty50()
+                    # print(available_stocks)
                     
                     # return render(request, 'dashboard/dashboard.html', {'stockpicker': available_stocks, 'user': user, 'role': role})
-                    return render(request,'dashboard/dashboard.html', {'stockpicker': available_stocks,'user': user, 'role': role})
+                    # return render(request,'dashboard/dashboard.html', {'stockpicker': available_stocks,'user': user, 'role': role})
+                    return redirect('dashboard')
+
+
                 messages.error(
                     request, 'Account is not active,please check your email')
                 return render(request, 'account/login.html')
