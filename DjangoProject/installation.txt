@@ -17,4 +17,4 @@ celery Beat => it tells celery to perform a task in perticular time (task schedu
                 pip install django-celery-beat
                 mention in install apps (django_celery_beat)
                 and in setting =>
-                             CELERY_RESULT_BACKEND = django-db (this means where do you want to store your tasks information)   
+                            CELERY_RESULT_BACKEND = django-db (this means where do you want to store your tasks information)   

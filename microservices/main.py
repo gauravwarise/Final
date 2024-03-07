@@ -121,7 +121,7 @@ class StockDetail(ConnectToAPI):
         try:
             sessionid = self._sessionData.sessionid
             csrf = self._sessionData.csrf
-            print(sessionid, csrf)
+            print(sessionid,     )
         except Exception as e:
             print(e)
 

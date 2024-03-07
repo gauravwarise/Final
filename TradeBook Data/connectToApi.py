@@ -1,19 +1,19 @@
-import pickle,os,requests
+import pickle,requests
 from json import loads
-import sys,websocket,time
 
-baseURL="http://www.cosmicrms.com/api"
-wsURL="ws://www.cosmicrms.com/api"
+# baseURL="https://www.cosmicrms.com/api"
+# wsURL="wss://www.cosmicrms.com/api"
+baseURL="http://192.168.15.63:8500"
+wsURL="ws://192.168.15.63:8500"
+
 
 class ConnectToAPI :
-
     """
         Class : ConnectToAPI 
         params to pass in constructor : 
             username : username provided for loggin in to rest api of rms
     
     """
-
     def __init__(self) :
         pass
         self._pickleFile = "session.pkl"
@@ -40,11 +40,8 @@ class ConnectToAPI :
         else :
             raise TypeError("Object of unsupproted type cannot be serialized")
         
-    
-
     def _login(self,creds=dict()):
         self.dataSerializer(creds)           
-
         try:
             __body = {
                 "event":"login",
@@ -55,85 +52,53 @@ class ConnectToAPI :
                 }
             }
             __response = requests.post(url=self.__loginURL,json=__body)
+            print("login response=======>", __response.text)
             if __response.status_code == 200 :                
                 __session = Session(sessionid=__response.cookies.get("sessionid"),csrf=__response.cookies.get("csrftoken"),accesstoken=loads(__response.text).get("access_token"),
                                     accessuserid =loads(__response.text).get("accessusers") )
-                print(loads(__response.text).get("accessusers"))
                 with open(self._pickleFile,"wb") as f :
                     pickle.dump(__session,f)   
-                # print("logged in successfully")
                 response_data = loads(__response.text)
-                
                 return response_data
             else:
-                # print("Response from API==========================:", __response.text)
                 response_data = loads(__response.text)
-                # already_logged_in = response_data.get("isalreadyloggedin")                
                 return response_data
         except Exception as e:
             return None
 
-
     def delete_session(self,data):
         try:
-            # Specify the endpoint URL for session deletion
             delete_session_url = baseURL+ "/account/deletesession"
             # delete_session_url = "http://192.168.15.63:8500/account/deletesession"
-
-            # Initialize headers
             headers = {
                 'X-CSRFToken': f'{self._sessionData.csrf}',
                 'Content-Type': 'application/json',
                 'Authorization': f'Bearer {self._sessionData.accesstoken}',
                 'Cookie': f'access_token={self._sessionData.accesstoken}; csrftoken={self._sessionData.csrf}; sessionid={self._sessionData.sessionid}'
             }
-            print("******************headers from delete session*********************", headers)
-
-            # Make a POST request to delete the session
             response = requests.post(url=delete_session_url, json=data, headers=headers)
-            response.raise_for_status()  # Check for HTTP errors
-
-            # Print the response details
+            response.raise_for_status() 
             print(f"DELETE Session Request {delete_session_url} successful")
             print("Response Status Code from delete session:", response.status_code)
             print("Response JSON from delete session:", response.json())
-
         except requests.exceptions.RequestException as e:
             print(f"Error making DELETE session request: {e}")
 
     def logout(self):
         try:
-            # Specify the endpoint URL for User Logout
-            # logout_url = "http://192.168.15.63:8500/account/logout"
             logout_url = baseURL + "/account/logout"
-
-            # Initialize headers
             headers = {
                 'X-CSRFToken': f'{self._sessionData.csrf}',
                 'Authorization': f'Bearer {self._sessionData.accesstoken}',
                 'Cookie': f'access_token={self._sessionData.accesstoken}; csrftoken={self._sessionData.csrf}; sessionid={self._sessionData.sessionid}'
             }
-
-            # Make a GET request to logout
             response = requests.get(url=logout_url, headers=headers)
-            response.raise_for_status()  # Check for HTTP errors
-
-            # Print the response details
+            response.raise_for_status()
             print(f"GET logout Request to {logout_url} successful")
             print("Response Status Code from logout:", response.status_code)
             print("Response JSON from logout:", response.json())
-
         except requests.exceptions.RequestException as e:
             print(f"Error making GET logout request: {e}")
-
-
-
-    def connectWebSocket(self):
-        try:
-            self.websocket = websocket.create_connection(self._wsURL,cookie=f"csrftoken={self._sessionData .csrf};sessionid={self._sessionData .sessionid}")
-        except Exception as e:
-            print("Error on connectWebSocket ",e)
-
 
 class Session :
     """
